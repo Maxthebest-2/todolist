@@ -167,6 +167,7 @@
             display: flex;
             gap: 15px;
             align-items: center;
+            z-index: 300;
         }
 
         .search-input {
@@ -303,6 +304,8 @@
             opacity: 0;
             transition: opacity 0.3s ease;
             align-items: center;
+            position: relative;
+            z-index: 400;
         }
 
         .checklist li:hover .objectif-actions {
@@ -474,102 +477,120 @@
             top: 20px;
             right: 20px;
             display: flex;
-            gap: 15px;
-            background: rgba(255, 255, 255, 0.1);
+            gap: 12px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
             backdrop-filter: blur(10px);
-            padding: 15px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 1000;
-            transition: all var(--transition-duration) ease;
-            animation: slideIn 0.5s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            -webkit-backdrop-filter: blur(10px);
+            padding: 10px 15px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            z-index: 100;
         }
 
         .theme-btn {
-            background: none;
+            appearance: none;
             border: none;
-            font-size: 1.5em;
+            background: none;
             cursor: pointer;
-            padding: 5px;
-            border-radius: 8px;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0.5;
-            filter: grayscale(0.5);
-            transform-origin: center;
+            font-size: 1.5em;
+            line-height: 1;
+            padding: 8px;
+            border-radius: 50%;
             position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.7;
         }
 
-        .theme-btn::after {
+        .theme-btn::before {
             content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: radial-gradient(circle, var(--primary-color) 0%, transparent 70%);
-            transform: translate(-50%, -50%);
-            transition: all 0.5s ease;
+            inset: 0;
             border-radius: 50%;
-            z-index: -1;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
             opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .theme-btn:hover::after {
-            width: 150%;
-            height: 150%;
-            opacity: 0.3;
+        .theme-btn:hover::before {
+            opacity: 1;
         }
 
         .theme-btn.active {
             opacity: 1;
-            filter: grayscale(0);
-            transform: rotate(360deg) scale(1.2);
-            animation: pulseGlow 2s infinite;
+            transform: scale(1.15);
+            animation: float 2s ease-in-out infinite;
         }
 
-        @keyframes pulseGlow {
-            0% {
-                text-shadow: 0 0 5px var(--primary-color);
+        @keyframes float {
+            0%, 100% {
+                transform: scale(1.15) translateY(0);
             }
             50% {
-                text-shadow: 0 0 20px var(--primary-color),
-                           0 0 30px var(--accent-color);
+                transform: scale(1.15) translateY(-3px);
             }
-            100% {
-                text-shadow: 0 0 5px var(--primary-color);
-            }
-        }
-
-        .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
         .theme-btn[data-theme="sun"] {
-            color: #FFC371;
-            text-shadow: 0 0 20px rgba(255, 195, 113, 0.8);
+            color: #FFD700;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
         }
 
         .theme-btn[data-theme="dark"] {
-            color: #E1E1E1;
-            text-shadow: 0 0 15px rgba(225, 225, 225, 0.4);
+            color: #A0A0FF;
+            text-shadow: 0 0 15px rgba(160, 160, 255, 0.4);
         }
 
         .theme-btn[data-theme="light"] {
-            color: #FFC371;
-            text-shadow: 0 0 20px rgba(255, 195, 113, 0.8);
+            color: #FF9A8B;
+            text-shadow: 0 0 15px rgba(255, 154, 139, 0.4);
+        }
+
+        @media (hover: hover) {
+            .theme-btn:hover {
+                transform: scale(1.1);
+                opacity: 0.9;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .theme-toggle {
+                top: 15px;
+                right: 15px;
+                padding: 8px 12px;
+            }
+
+            .theme-btn {
+                font-size: 1.3em;
+                padding: 6px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .theme-toggle {
+                top: 10px;
+                right: 10px;
+                padding: 6px 10px;
+                gap: 8px;
+            }
+
+            .theme-btn {
+                font-size: 1.2em;
+                padding: 5px;
+            }
+
+            .theme-btn.active {
+                transform: scale(1.1);
+            }
+
+            @keyframes float {
+                0%, 100% {
+                    transform: scale(1.1) translateY(0);
+                }
+                50% {
+                    transform: scale(1.1) translateY(-2px);
+                }
+            }
         }
 
         :root[data-theme="light"] .section {
@@ -653,6 +674,7 @@
             backdrop-filter: blur(10px);
             position: relative;
             overflow: hidden;
+            z-index: 200;
         }
 
         .priority-medium {
@@ -665,6 +687,7 @@
             backdrop-filter: blur(9px);
             position: relative;
             overflow: hidden;
+            z-index: 200;
         }
 
         .priority-low {
@@ -677,6 +700,7 @@
             backdrop-filter: blur(8px);
             position: relative;
             overflow: hidden;
+            z-index: 200;
         }
 
         /* Effets de brillance plus intenses */
@@ -843,7 +867,7 @@
             }
 
             .theme-toggle {
-                top: 15px;
+                bottom: 15px;
                 right: 15px;
                 padding: 12px;
             }
@@ -857,99 +881,127 @@
 
         @media screen and (max-width: 768px) {
             :root {
-                --container-padding: 15px;
+                --container-padding: 12px;
+                --border-radius-large: 16px;
+                --border-radius-medium: 12px;
+                --border-radius-small: 8px;
             }
 
             body {
-                padding: 10px;
-            }
-
-            .theme-toggle {
-                top: 10px;
-                right: 10px;
-                padding: 10px;
-                gap: 10px;
-            }
-
-            .theme-btn {
-                font-size: 1.3em;
+                padding: var(--container-padding);
+                font-size: 15px;
             }
 
             h1 {
                 font-size: 1.8em;
-                margin-bottom: 20px;
-                padding: 10px;
-                margin-top: 60px;
+                margin: 60px 0 20px 70px;
+                padding: 12px;
+                line-height: 1.3;
             }
 
             .search-container {
+                margin: 15px auto 20px;
                 flex-direction: column;
-                gap: 10px;
-                position: relative;
+                gap: 12px;
             }
 
             .search-input {
                 width: 100%;
-                padding: 12px 15px 12px 40px;
-                font-size: 1em;
+                height: 45px;
+                font-size: 16px;
+                padding: 8px 40px 8px 45px;
             }
 
             .search-icon {
-                left: 12px;
-                top: 13px;
-                transform: none;
-                font-size: 1.1em;
+                top: 12px;
+                left: 15px;
+                font-size: 20px;
             }
 
             .filter-status {
                 width: 100%;
+                height: 45px;
                 justify-content: center;
-                padding: 10px;
+                font-size: 15px;
+                padding: 8px 15px;
             }
 
             .section {
                 padding: 15px;
                 margin: 15px 0;
+                border-radius: var(--border-radius-medium);
             }
 
             .section h2 {
-                font-size: 1.2em;
+                font-size: 1.3em;
                 margin-bottom: 15px;
             }
 
             .checklist li {
                 padding: 12px;
+                gap: 10px;
                 flex-wrap: wrap;
+                border-radius: var(--border-radius-small);
+            }
+
+            .objectif-text {
+                width: calc(100% - 35px);
+                font-size: 15px;
+                line-height: 1.4;
+                margin-right: 0;
             }
 
             .objectif-actions {
                 width: 100%;
-                justify-content: flex-end;
                 margin-top: 10px;
+                padding-top: 10px;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                justify-content: space-between;
                 opacity: 1;
             }
 
             .priority-buttons {
-                margin-right: auto;
-            }
-
-            .date-picker {
-                width: 120px;
-            }
-
-            .modal-content {
-                width: 95%;
-                padding: 20px;
-            }
-
-            .export-import-buttons {
-                flex-direction: column;
+                display: flex;
                 gap: 8px;
             }
 
-            .export-btn, .import-btn, .reset-btn {
+            .priority-btn {
+                width: 24px;
+                height: 24px;
+                touch-action: manipulation;
+            }
+
+            .date-picker {
+                height: 35px;
+                padding: 5px 8px;
+                font-size: 14px;
+                min-width: 120px;
+            }
+
+            .edit-btn, .delete-btn {
                 padding: 8px;
-                font-size: 0.85em;
+                font-size: 18px;
+                touch-action: manipulation;
+            }
+
+            .add-objectif-btn {
+                height: 45px;
+                font-size: 15px;
+                margin-top: 12px;
+            }
+
+            .export-import-buttons {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 12px;
+            }
+
+            .export-btn, .import-btn, .reset-btn {
+                flex: 1 1 calc(50% - 4px);
+                height: 40px;
+                font-size: 14px;
+                min-width: 140px;
             }
         }
 
@@ -959,39 +1011,24 @@
             }
 
             body {
-                padding: 8px;
+                padding: var(--container-padding);
+                font-size: 14px;
             }
 
             h1 {
-                font-size: 1.5em;
-                margin-bottom: 15px;
-                padding: 8px;
-                margin-top: 50px;
-            }
-
-            .theme-toggle {
-                padding: 8px;
-                gap: 8px;
-            }
-
-            .theme-btn {
-                font-size: 1.2em;
-                padding: 4px;
-            }
-
-            .search-container {
-                gap: 8px;
+                font-size: 1.6em;
+                margin: 50px 0 15px 60px;
+                padding: 10px;
             }
 
             .search-input {
-                padding: 10px 15px 10px 35px;
-                font-size: 0.95em;
+                height: 42px;
+                font-size: 15px;
             }
 
-            .search-icon {
-                left: 10px;
-                top: 11px;
-                font-size: 1em;
+            .filter-status {
+                height: 42px;
+                font-size: 14px;
             }
 
             .section {
@@ -1001,78 +1038,82 @@
 
             .checklist li {
                 padding: 10px;
-                gap: 8px;
             }
 
             .objectif-text {
-                font-size: 0.9em;
+                font-size: 14px;
             }
 
             .priority-btn {
-                width: 18px;
-                height: 18px;
+                width: 22px;
+                height: 22px;
             }
 
             .date-picker {
-                width: 110px;
-                font-size: 0.9em;
+                height: 32px;
+                font-size: 13px;
+                min-width: 110px;
             }
 
             .edit-btn, .delete-btn {
-                font-size: 1em;
+                padding: 6px;
+                font-size: 16px;
+            }
+
+            .export-btn, .import-btn, .reset-btn {
+                height: 38px;
+                font-size: 13px;
+                flex: 1 1 100%;
             }
 
             .modal-content {
                 padding: 15px;
+                width: 95%;
+            }
+
+            .modal input[type="text"] {
+                height: 42px;
+                font-size: 15px;
             }
 
             .modal-btn {
+                height: 38px;
+                font-size: 14px;
                 padding: 8px 15px;
-                font-size: 0.85em;
+            }
+
+            .priority-btn,
+            .edit-btn,
+            .delete-btn,
+            .date-picker,
+            input[type="checkbox"] {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                * {
+                    animation-duration: 0.01ms !important;
+                    transition-duration: 0.01ms !important;
+                }
             }
         }
 
-        /* Ajustements pour les effets de surbrillance en mode responsive */
-        @media screen and (max-width: 768px) {
-            .priority-high,
-            .priority-medium,
-            .priority-low {
-                box-shadow: 0 0 20px currentColor;
+        @media (hover: none) {
+            .checklist li:active,
+            .add-objectif-btn:active,
+            .export-btn:active,
+            .import-btn:active,
+            .reset-btn:active,
+            .priority-btn:active,
+            .edit-btn:active,
+            .delete-btn:active {
+                transform: scale(0.98);
+                opacity: 0.9;
             }
 
-            .priority-high::after,
-            .priority-medium::after,
-            .priority-low::after {
-                animation-duration: 5s;
-            }
-
-            .checklist li:hover {
-                transform: translateY(-1px);
-            }
-
-            .checklist li.priority-high:hover {
-                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2),
-                           0 0 30px rgba(255, 68, 68, 0.25);
-            }
-
-            .checklist li.priority-medium:hover {
-                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15),
-                           0 0 25px rgba(255, 235, 59, 0.2);
-            }
-
-            .checklist li.priority-low:hover {
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1),
-                           0 0 20px rgba(76, 175, 80, 0.15);
-            }
-        }
-
-        /* Optimisations pour les appareils à faible puissance */
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-                scroll-behavior: auto !important;
+            .objectif-actions {
+                opacity: 1;
             }
         }
     </style>
