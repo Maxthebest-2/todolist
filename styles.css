@@ -27,14 +27,14 @@
 }
 
 :root[data-theme="sun"] {
-    --primary-color: #FFB74D;    /* Orange clair */
-    --secondary-color: #FFA726;   /* Orange */
-    --accent-color: #FF9800;      /* Orange foncé */
+    --primary-color: #FF9800;    /* Orange plus foncé */
+    --secondary-color: #FF5722;   /* Orange profond */
+    --accent-color: #FFC107;      /* Jaune ambré */
     --background-start: #FFFFFF;  /* Blanc */
-    --background-mid: #FFFFFF;    /* Blanc */
-    --background-end: #FFFFFF;    /* Blanc */
-    --text-primary: #333333;      /* Texte foncé */
-    --text-secondary: #666666;    /* Texte gris */
+    --background-mid: #FAFAFA;    /* Blanc cassé */
+    --background-end: #F5F5F5;    /* Gris très clair */
+    --text-primary: #212121;      /* Texte presque noir */
+    --text-secondary: #757575;    /* Texte gris foncé */
 }
 
 * {
@@ -127,14 +127,14 @@ h1 {
     top: 20px;
     right: 20px;
     display: flex;
-    gap: 12px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 10px 15px;
+    gap: 8px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 6px 10px;
     border-radius: 50px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     z-index: 100;
 }
 
@@ -143,13 +143,13 @@ h1 {
     border: none;
     background: none;
     cursor: pointer;
-    font-size: 1.5em;
+    font-size: 1.2em;
     line-height: 1;
-    padding: 8px;
+    padding: 6px;
     border-radius: 50%;
     position: relative;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0.7;
+    opacity: 0.5;
 }
 
 .theme-btn::before {
@@ -167,14 +167,14 @@ h1 {
 }
 
 .theme-btn.active {
-    opacity: 1;
-    transform: scale(1.15);
+    opacity: 0.9;
+    transform: scale(1.1);
     animation: float 2s ease-in-out infinite;
 }
 
 .theme-btn[data-theme="sun"] {
-    color: #FFD700;
-    text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    color: #FF9800;
+    text-shadow: 0 0 15px rgba(255, 152, 0, 0.4);
 }
 
 .theme-btn[data-theme="dark"] {
@@ -738,6 +738,22 @@ h1 {
         font-size: 14px;
         min-width: 140px;
     }
+
+    .add-section-btn {
+        width: 100%;
+        padding: 0.8rem;
+        font-size: 1em;
+    }
+
+    .section-actions {
+        gap: 8px;
+    }
+
+    .edit-section-btn,
+    .delete-section-btn {
+        font-size: 1.1em;
+        padding: 8px;
+    }
 }
 
 @media screen and (max-width: 480px) {
@@ -849,5 +865,146 @@ h1 {
     * {
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
+    }
+}
+
+.categories-section,
+.categories-list,
+.category-item,
+.category-color,
+.category-name,
+.delete-category,
+.add-category-btn,
+#categoryColor {
+    display: none;
+}
+
+.add-section-container {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+.add-section-btn {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.add-section-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.custom-section {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#sectionNameInput,
+#sectionIconInput {
+    margin-bottom: 15px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.edit-section-btn,
+.delete-section-btn {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.2em;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    padding: 5px;
+}
+
+.edit-section-btn:hover,
+.delete-section-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Styles spécifiques pour le thème soleil */
+[data-theme="sun"] .section {
+    background: rgba(255, 152, 0, 0.05);
+    border: 1px solid rgba(255, 152, 0, 0.1);
+}
+
+[data-theme="sun"] .search-input,
+[data-theme="sun"] .filter-status,
+[data-theme="sun"] .modal-content,
+[data-theme="sun"] .modal input[type="text"],
+[data-theme="sun"] #importTextarea {
+    background: rgba(255, 152, 0, 0.05);
+    border: 1px solid rgba(255, 152, 0, 0.2);
+}
+
+[data-theme="sun"] .checklist li {
+    background: rgba(255, 152, 0, 0.05);
+    border: 1px solid rgba(255, 152, 0, 0.1);
+}
+
+[data-theme="sun"] .theme-toggle {
+    background: rgba(255, 152, 0, 0.05);
+    border: 1px solid rgba(255, 152, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(255, 152, 0, 0.05);
+}
+
+[data-theme="sun"] .add-objectif-btn {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+}
+
+[data-theme="sun"] .modal-btn.save {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+}
+
+[data-theme="sun"] .modal-btn.cancel {
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    color: var(--text-primary);
+}
+
+[data-theme="sun"] .theme-btn[data-theme="sun"] {
+    color: #FF9800;
+    text-shadow: 0 0 15px rgba(255, 152, 0, 0.4);
+}
+
+/* Ajustements pour mobile en thème soleil */
+@media screen and (max-width: 768px) {
+    [data-theme="sun"] .objectif-actions {
+        border-top: 1px solid rgba(255, 152, 0, 0.1);
+    }
+    
+    [data-theme="sun"] .search-input,
+    [data-theme="sun"] .filter-status {
+        background: rgba(255, 152, 0, 0.05);
+        border: 1px solid rgba(255, 152, 0, 0.2);
     }
 } 

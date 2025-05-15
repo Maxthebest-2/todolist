@@ -401,4 +401,153 @@ document.addEventListener('DOMContentLoaded', function() {
     // Chargement initial des données
     chargerListe(objectifsList, 'objectifs');
     chargerListe(checklistQuotidienne, 'checklist');
+
+    // Gestion des sections personnalisées
+    let customSections = JSON.parse(localStorage.getItem('customSections')) || [];
+    const sectionModal = document.getElementById('sectionModal');
+    const addSectionBtn = document.getElementById('addSectionBtn');
+    const cancelSectionBtn = document.getElementById('cancelSectionBtn');
+    const saveSectionBtn = document.getElementById('saveSectionBtn');
+    const sectionNameInput = document.getElementById('sectionNameInput');
+    const sectionIconInput = document.getElementById('sectionIconInput');
+
+    function createCustomSection(name, icon, id) {
+        const section = document.createElement('div');
+        section.className = 'section custom-section';
+        section.dataset.sectionId = id;
+        section.innerHTML = `
+            <div class="section-header">
+                <h2>${icon} ${name}</h2>
+                <div class="section-actions">
+                    <button class="edit-section-btn" title="Modifier la section">✏️</button>
+                    <button class="delete-section-btn" title="Supprimer la section">🗑️</button>
+                </div>
+            </div>
+            <ul class="checklist" id="section-${id}"></ul>
+            <button class="add-objectif-btn">+ Ajouter un élément</button>
+            <div class="export-import-buttons">
+                <button class="export-btn">📋 Exporter</button>
+                <button class="import-btn">📥 Importer</button>
+                <button class="reset-btn">🔄 Réinitialiser</button>
+            </div>
+        `;
+
+        // Ajouter avant le bouton "Nouvelle Section"
+        const addSectionContainer = document.querySelector('.add-section-container');
+        addSectionContainer.parentNode.insertBefore(section, addSectionContainer);
+
+        // Configuration du drag and drop
+        const sectionList = section.querySelector('.checklist');
+        setupDragAndDrop(sectionList, `section-${id}`);
+
+        // Configuration des boutons
+        setupExportImport(
+            section.querySelector('.export-btn'),
+            section.querySelector('.import-btn'),
+            sectionList,
+            `section-${id}`
+        );
+        setupResetButton(section.querySelector('.reset-btn'), sectionList, `section-${id}`);
+
+        // Ajouter un élément
+        section.querySelector('.add-objectif-btn').addEventListener('click', () => {
+            editingIndex = -1;
+            currentList = sectionList;
+            objectifInput.value = '';
+            objectifModal.style.display = 'flex';
+            objectifModal.querySelector('h3').textContent = `Ajouter un élément dans ${name}`;
+        });
+
+        // Modifier la section
+        section.querySelector('.edit-section-btn').addEventListener('click', () => {
+            sectionModal.style.display = 'flex';
+            sectionNameInput.value = name;
+            sectionIconInput.value = icon;
+            sectionModal.querySelector('h3').textContent = 'Modifier la section';
+            saveSectionBtn.textContent = 'Modifier';
+            
+            // Stocker l'ID de la section en cours d'édition
+            sectionModal.dataset.editingId = id;
+        });
+
+        // Supprimer la section
+        section.querySelector('.delete-section-btn').addEventListener('click', () => {
+            if (confirm('Voulez-vous vraiment supprimer cette section et tout son contenu ?')) {
+                section.remove();
+                customSections = customSections.filter(s => s.id !== id);
+                localStorage.setItem('customSections', JSON.stringify(customSections));
+                localStorage.removeItem(`section-${id}`);
+            }
+        });
+
+        // Charger les éléments existants
+        chargerListe(sectionList, `section-${id}`);
+    }
+
+    function loadCustomSections() {
+        customSections.forEach(section => {
+            createCustomSection(section.name, section.icon, section.id);
+        });
+    }
+
+    addSectionBtn.addEventListener('click', () => {
+        sectionModal.style.display = 'flex';
+        sectionNameInput.value = '';
+        sectionIconInput.value = '📚';
+        sectionModal.dataset.editingId = '';
+        saveSectionBtn.textContent = 'Créer';
+        sectionModal.querySelector('h3').textContent = 'Nouvelle Section';
+    });
+
+    cancelSectionBtn.addEventListener('click', () => {
+        sectionModal.style.display = 'none';
+        sectionModal.dataset.editingId = '';
+        saveSectionBtn.textContent = 'Créer';
+        sectionModal.querySelector('h3').textContent = 'Nouvelle Section';
+    });
+
+    saveSectionBtn.addEventListener('click', () => {
+        const name = sectionNameInput.value.trim();
+        const icon = sectionIconInput.value.trim() || '📚';
+        const editingId = sectionModal.dataset.editingId;
+
+        if (name) {
+            if (editingId) {
+                // Mode édition
+                const sectionToEdit = document.querySelector(`[data-section-id="${editingId}"]`);
+                if (sectionToEdit) {
+                    sectionToEdit.querySelector('h2').textContent = `${icon} ${name}`;
+                    const sectionIndex = customSections.findIndex(s => s.id === editingId);
+                    if (sectionIndex !== -1) {
+                        customSections[sectionIndex].name = name;
+                        customSections[sectionIndex].icon = icon;
+                        localStorage.setItem('customSections', JSON.stringify(customSections));
+                    }
+                }
+            } else {
+                // Mode création
+                const id = Date.now().toString();
+                const newSection = { id, name, icon };
+                customSections.push(newSection);
+                localStorage.setItem('customSections', JSON.stringify(customSections));
+                createCustomSection(name, icon, id);
+            }
+
+            // Réinitialiser la modale
+            sectionModal.style.display = 'none';
+            sectionModal.dataset.editingId = '';
+            saveSectionBtn.textContent = 'Créer';
+            sectionModal.querySelector('h3').textContent = 'Nouvelle Section';
+        }
+    });
+
+    // Fermeture de la modale de section en cliquant en dehors
+    window.addEventListener('click', (e) => {
+        if (e.target === sectionModal) {
+            sectionModal.style.display = 'none';
+        }
+    });
+
+    // Chargement initial des sections personnalisées
+    loadCustomSections();
 }); 

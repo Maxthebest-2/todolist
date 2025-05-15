@@ -47,6 +47,22 @@
         </div>
     </div>
 
+    <div class="add-section-container">
+        <button id="addSectionBtn" class="add-section-btn">+ Nouvelle Section</button>
+    </div>
+
+    <div id="sectionModal" class="modal">
+        <div class="modal-content">
+            <h3>Nouvelle Section</h3>
+            <input type="text" id="sectionNameInput" placeholder="Nom de la section">
+            <input type="text" id="sectionIconInput" placeholder="Emoji de la section (ex: 📚)">
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" id="cancelSectionBtn">Annuler</button>
+                <button class="modal-btn save" id="saveSectionBtn">Créer</button>
+            </div>
+        </div>
+    </div>
+
     <div id="objectifModal" class="modal">
         <div class="modal-content">
             <h3>Ajouter un objectif</h3>
@@ -65,6 +81,18 @@
             <div class="modal-buttons">
                 <button class="modal-btn cancel" id="cancelImportBtn">Annuler</button>
                 <button class="modal-btn save" id="confirmImportBtn">Importer</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <h3>Nouvelle Catégorie</h3>
+            <input type="text" id="categoryInput" placeholder="Nom de la catégorie">
+            <input type="color" id="categoryColor" value="#4CAF50">
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" id="cancelCategoryBtn">Annuler</button>
+                <button class="modal-btn save" id="saveCategoryBtn">Enregistrer</button>
             </div>
         </div>
     </div>
