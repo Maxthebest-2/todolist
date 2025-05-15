@@ -206,6 +206,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Voulez-vous vraiment supprimer cet objectif ?' : 
                 'Voulez-vous vraiment supprimer cette tâche ?';
             if (confirm(message)) {
+                // Supprimer l'élément du globalItems avant de le retirer du DOM
+                const itemId = li.dataset.id;
+                if (itemId && globalItems[itemId]) {
+                    delete globalItems[itemId];
+                    localStorage.setItem('globalItems', JSON.stringify(globalItems));
+                }
                 li.remove();
                 sauvegarderListe(liste, storageKey);
             }
