@@ -202,10 +202,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Configuration du drag and drop
     function setupDragAndDrop(liste, storageKey) {
         let draggingElement = null;
+        let sourceList = null;
+        let sourceKey = null;
 
         liste.addEventListener('dragstart', (e) => {
             if (e.target.tagName === 'LI') {
                 draggingElement = e.target;
+                sourceList = liste;
+                sourceKey = storageKey;
                 setTimeout(() => {
                     draggingElement.classList.add('dragging');
                 }, 0);
@@ -215,21 +219,36 @@ document.addEventListener('DOMContentLoaded', function() {
         liste.addEventListener('dragend', () => {
             if (draggingElement) {
                 draggingElement.classList.remove('dragging');
+                
+                // Si l'élément a été déplacé vers une autre liste
+                if (draggingElement.parentElement !== sourceList) {
+                    // Sauvegarder les deux listes
+                    sauvegarderListe(sourceList, sourceKey);
+                    sauvegarderListe(draggingElement.parentElement, draggingElement.parentElement.id);
+                } else {
+                    // Sauvegarder uniquement la liste source
+                    sauvegarderListe(sourceList, sourceKey);
+                }
+                
                 draggingElement = null;
-                sauvegarderListe(liste, storageKey);
+                sourceList = null;
+                sourceKey = null;
             }
         });
 
-        liste.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            if (!draggingElement) return;
+        // Permettre le drop dans toutes les listes
+        document.querySelectorAll('.checklist').forEach(checklist => {
+            checklist.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (!draggingElement) return;
 
-            const afterElement = getDropPosition(liste, e.clientY);
-            if (afterElement) {
-                liste.insertBefore(draggingElement, afterElement);
-            } else {
-                liste.appendChild(draggingElement);
-            }
+                const afterElement = getDropPosition(checklist, e.clientY);
+                if (afterElement) {
+                    checklist.insertBefore(draggingElement, afterElement);
+                } else {
+                    checklist.appendChild(draggingElement);
+                }
+            });
         });
 
         function getDropPosition(container, y) {
