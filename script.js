@@ -96,8 +96,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Fonctions utilitaires
     function sauvegarderListe(liste, storageKey) {
+        if (!liste || !storageKey) return;
+
         const items = Array.from(liste.children).map((li, index) => {
             const itemId = li.dataset.id || `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            li.dataset.id = itemId; // S'assurer que l'élément a un ID
+
             const item = {
                 id: itemId,
                 texte: li.querySelector('.objectif-text').textContent,
@@ -113,6 +117,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Mettre à jour dans la structure globale
             globalItems[itemId] = item;
             return item;
+        });
+
+        // Nettoyer les éléments qui ne sont plus dans cette section
+        Object.keys(globalItems).forEach(itemId => {
+            if (globalItems[itemId].currentSection === storageKey && 
+                !items.find(item => item.id === itemId)) {
+                delete globalItems[itemId];
+            }
         });
 
         // Sauvegarder la structure globale
@@ -145,6 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function createListElement(text, liste, storageKey) {
         const li = document.createElement('li');
         li.setAttribute('draggable', true);
+        li.dataset.id = `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         li.innerHTML = `
             <input type="checkbox">
             <span class="objectif-text">${text}</span>
@@ -224,44 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function setupDragAndDrop(liste, storageKey) {
         let draggingElement = null;
 
-        liste.addEventListener('dragstart', (e) => {
-            if (e.target.tagName === 'LI') {
-                draggingElement = e.target;
-                draggingElement.classList.add('dragging');
-                e.dataTransfer.effectAllowed = 'move';
-            }
-        });
-
-        liste.addEventListener('dragend', (e) => {
-            if (draggingElement) {
-                draggingElement.classList.remove('dragging');
-                const itemId = draggingElement.dataset.id;
-                const targetList = draggingElement.parentElement;
-                const targetKey = targetList === objectifsList ? 'objectifs' :
-                                targetList === checklistQuotidienne ? 'checklist' :
-                                targetList.id;
-
-                // Mise à jour immédiate de la position et de la section
-                if (globalItems[itemId]) {
-                    globalItems[itemId].currentSection = targetKey;
-                    
-                    // Mettre à jour les positions de tous les éléments dans la liste cible
-                    Array.from(targetList.children).forEach((li, index) => {
-                        const id = li.dataset.id;
-                        if (globalItems[id]) {
-                            globalItems[id].position = index;
-                        }
-                    });
-
-                    // Sauvegarder immédiatement
-                    localStorage.setItem('globalItems', JSON.stringify(globalItems));
-                }
-
-                draggingElement = null;
-            }
-        });
-
-        // Amélioration du comportement du drag & drop
+        // Permettre le drag & drop sur toutes les listes
         document.querySelectorAll('.checklist').forEach(checklist => {
             checklist.addEventListener('dragover', (e) => {
                 e.preventDefault();
@@ -281,21 +257,60 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!draggingElement) return;
 
                 const targetList = checklist;
-                const targetKey = targetList === objectifsList ? 'objectifs' :
-                                targetList === checklistQuotidienne ? 'checklist' :
-                                targetList.id;
-
+                const sourceList = draggingElement.parentElement;
                 const itemId = draggingElement.dataset.id;
+
+                // Déterminer les clés de stockage
+                const targetKey = getStorageKey(targetList);
+                const sourceKey = getStorageKey(sourceList);
+
                 if (globalItems[itemId]) {
                     globalItems[itemId].currentSection = targetKey;
-                    globalItems[itemId].position = Array.from(targetList.children).indexOf(draggingElement);
                     
-                    // Sauvegarder immédiatement après le drop
+                    // Mettre à jour les positions dans la liste cible
+                    Array.from(targetList.children).forEach((li, index) => {
+                        const id = li.dataset.id;
+                        if (globalItems[id]) {
+                            globalItems[id].position = index;
+                        }
+                    });
+
+                    // Sauvegarder les changements
                     localStorage.setItem('globalItems', JSON.stringify(globalItems));
+
+                    // Sauvegarder les deux listes
+                    if (sourceList !== targetList) {
+                        sauvegarderListe(sourceList, sourceKey);
+                    }
+                    sauvegarderListe(targetList, targetKey);
                 }
             });
         });
 
+        // Configuration des événements de l'élément traîné
+        liste.addEventListener('dragstart', (e) => {
+            if (e.target.tagName === 'LI') {
+                draggingElement = e.target;
+                draggingElement.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            }
+        });
+
+        liste.addEventListener('dragend', (e) => {
+            if (draggingElement) {
+                draggingElement.classList.remove('dragging');
+                draggingElement = null;
+            }
+        });
+
+        // Fonction utilitaire pour obtenir la clé de stockage d'une liste
+        function getStorageKey(list) {
+            if (list === objectifsList) return 'objectifs';
+            if (list === checklistQuotidienne) return 'checklist';
+            return list.id; // Pour les sections personnalisées
+        }
+
+        // Fonction utilitaire pour déterminer la position de drop
         function getDropPosition(container, y) {
             const draggableElements = [...container.querySelectorAll('li:not(.dragging)')];
             return draggableElements.reduce((closest, child) => {
@@ -506,7 +521,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Configuration du drag and drop
         const sectionList = section.querySelector('.checklist');
-        setupDragAndDrop(sectionList, `section-${id}`);
+
+        // Permettre le drag & drop sur cette section
+        sectionList.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        });
+
+        sectionList.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const draggingElement = document.querySelector('.dragging');
+            if (!draggingElement) return;
+
+            const sourceList = draggingElement.parentElement;
+            const itemId = draggingElement.dataset.id;
+
+            // Ajouter l'élément à la nouvelle section
+            sectionList.appendChild(draggingElement);
+
+            if (globalItems[itemId]) {
+                globalItems[itemId].currentSection = `section-${id}`;
+                
+                // Mettre à jour les positions
+                Array.from(sectionList.children).forEach((li, index) => {
+                    const id = li.dataset.id;
+                    if (globalItems[id]) {
+                        globalItems[id].position = index;
+                    }
+                });
+
+                // Sauvegarder les changements
+                localStorage.setItem('globalItems', JSON.stringify(globalItems));
+
+                // Sauvegarder les deux listes
+                if (sourceList) {
+                    const sourceKey = sourceList === objectifsList ? 'objectifs' :
+                                    sourceList === checklistQuotidienne ? 'checklist' :
+                                    sourceList.id;
+                    sauvegarderListe(sourceList, sourceKey);
+                }
+                sauvegarderListe(sectionList, `section-${id}`);
+            }
+        });
 
         // Configuration des boutons
         setupExportImport(
@@ -533,23 +589,33 @@ document.addEventListener('DOMContentLoaded', function() {
             sectionIconInput.value = icon;
             sectionModal.querySelector('h3').textContent = 'Modifier la section';
             saveSectionBtn.textContent = 'Modifier';
-            
-            // Stocker l'ID de la section en cours d'édition
             sectionModal.dataset.editingId = id;
         });
 
         // Supprimer la section
         section.querySelector('.delete-section-btn').addEventListener('click', () => {
             if (confirm('Voulez-vous vraiment supprimer cette section et tout son contenu ?')) {
+                // Supprimer tous les éléments de cette section de globalItems
+                Object.keys(globalItems).forEach(itemId => {
+                    if (globalItems[itemId].currentSection === `section-${id}`) {
+                        delete globalItems[itemId];
+                    }
+                });
+                localStorage.setItem('globalItems', JSON.stringify(globalItems));
+                
                 section.remove();
                 customSections = customSections.filter(s => s.id !== id);
                 localStorage.setItem('customSections', JSON.stringify(customSections));
-                localStorage.removeItem(`section-${id}`);
             }
         });
 
         // Charger les éléments existants
         chargerListe(sectionList, `section-${id}`);
+        
+        // Configurer le drag & drop pour cette section
+        setupDragAndDrop(sectionList, `section-${id}`);
+        
+        return section;
     }
 
     function loadCustomSections() {

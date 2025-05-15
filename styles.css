@@ -281,6 +281,31 @@ h1 {
 
 .checklist {
     list-style: none;
+    min-height: 50px; /* Hauteur minimale pour permettre le drop */
+    padding: 10px 0;
+    border: 2px dashed transparent; /* Bordure invisible par défaut */
+    transition: all 0.3s ease;
+}
+
+.checklist:empty {
+    border-color: rgba(255, 255, 255, 0.1); /* Bordure visible quand vide */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.checklist:empty::after {
+    content: "Déposez vos éléments ici";
+    color: var(--text-secondary);
+    font-style: italic;
+    opacity: 0.7;
+}
+
+/* Style quand on survole avec un élément */
+.checklist.drag-over {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--primary-color);
 }
 
 .checklist li {
