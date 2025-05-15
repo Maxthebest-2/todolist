@@ -91,39 +91,54 @@ document.addEventListener('DOMContentLoaded', function() {
         filterItems(e.target.value);
     });
 
+    // Structure de données globale pour tous les éléments
+    let globalItems = JSON.parse(localStorage.getItem('globalItems') || '{}');
+
     // Fonctions utilitaires
     function sauvegarderListe(liste, storageKey) {
-        const items = Array.from(liste.children).map((li, index) => ({
-            texte: li.querySelector('.objectif-text').textContent,
-            checked: li.querySelector('input[type="checkbox"]').checked,
-            date: li.querySelector('.date-picker').value,
-            position: index,
-            priority: li.classList.contains('priority-high') ? 'high' :
-                     li.classList.contains('priority-medium') ? 'medium' :
-                     li.classList.contains('priority-low') ? 'low' : null
-        }));
-        localStorage.setItem(storageKey, JSON.stringify(items));
+        const items = Array.from(liste.children).map((li, index) => {
+            const itemId = li.dataset.id || `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            const item = {
+                id: itemId,
+                texte: li.querySelector('.objectif-text').textContent,
+                checked: li.querySelector('input[type="checkbox"]').checked,
+                date: li.querySelector('.date-picker').value,
+                position: index,
+                currentSection: storageKey,
+                priority: li.classList.contains('priority-high') ? 'high' :
+                         li.classList.contains('priority-medium') ? 'medium' :
+                         li.classList.contains('priority-low') ? 'low' : null
+            };
+            
+            // Mettre à jour dans la structure globale
+            globalItems[itemId] = item;
+            return item;
+        });
+
+        // Sauvegarder la structure globale
+        localStorage.setItem('globalItems', JSON.stringify(globalItems));
     }
 
     function chargerListe(liste, storageKey) {
-        const itemsSauvegardes = localStorage.getItem(storageKey);
-        if (itemsSauvegardes) {
-            const items = JSON.parse(itemsSauvegardes);
-            liste.innerHTML = '';
-            items.sort((a, b) => a.position - b.position)
-                .forEach(item => {
-                    const li = createListElement(item.texte, liste, storageKey);
-                    li.querySelector('input[type="checkbox"]').checked = item.checked;
-                    if (item.date) {
-                        li.querySelector('.date-picker').value = item.date;
-                    }
-                    if (item.priority) {
-                        li.classList.add(`priority-${item.priority}`);
-                        li.querySelector(`.priority-btn.${item.priority}`).classList.add('active');
-                    }
-                    liste.appendChild(li);
-            });
-        }
+        // Filtrer les éléments qui appartiennent à cette section
+        const sectionItems = Object.values(globalItems)
+            .filter(item => item.currentSection === storageKey)
+            .sort((a, b) => a.position - b.position);
+
+        liste.innerHTML = '';
+        sectionItems.forEach(item => {
+            const li = createListElement(item.texte, liste, storageKey);
+            li.dataset.id = item.id;
+            li.querySelector('input[type="checkbox"]').checked = item.checked;
+            if (item.date) {
+                li.querySelector('.date-picker').value = item.date;
+            }
+            if (item.priority) {
+                li.classList.add(`priority-${item.priority}`);
+                li.querySelector(`.priority-btn.${item.priority}`).classList.add('active');
+            }
+            liste.appendChild(li);
+        });
     }
 
     // Création des éléments
@@ -202,44 +217,49 @@ document.addEventListener('DOMContentLoaded', function() {
     // Configuration du drag and drop
     function setupDragAndDrop(liste, storageKey) {
         let draggingElement = null;
-        let sourceList = null;
-        let sourceKey = null;
 
         liste.addEventListener('dragstart', (e) => {
             if (e.target.tagName === 'LI') {
                 draggingElement = e.target;
-                sourceList = liste;
-                sourceKey = storageKey;
-                setTimeout(() => {
-                    draggingElement.classList.add('dragging');
-                }, 0);
+                draggingElement.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
             }
         });
 
-        liste.addEventListener('dragend', () => {
+        liste.addEventListener('dragend', (e) => {
             if (draggingElement) {
                 draggingElement.classList.remove('dragging');
-                
-                // Si l'élément a été déplacé vers une autre liste
-                if (draggingElement.parentElement !== sourceList) {
-                    // Sauvegarder les deux listes
-                    sauvegarderListe(sourceList, sourceKey);
-                    sauvegarderListe(draggingElement.parentElement, draggingElement.parentElement.id);
-                } else {
-                    // Sauvegarder uniquement la liste source
-                    sauvegarderListe(sourceList, sourceKey);
+                const itemId = draggingElement.dataset.id;
+                const targetList = draggingElement.parentElement;
+                const targetKey = targetList === objectifsList ? 'objectifs' :
+                                targetList === checklistQuotidienne ? 'checklist' :
+                                targetList.id;
+
+                // Mise à jour immédiate de la position et de la section
+                if (globalItems[itemId]) {
+                    globalItems[itemId].currentSection = targetKey;
+                    
+                    // Mettre à jour les positions de tous les éléments dans la liste cible
+                    Array.from(targetList.children).forEach((li, index) => {
+                        const id = li.dataset.id;
+                        if (globalItems[id]) {
+                            globalItems[id].position = index;
+                        }
+                    });
+
+                    // Sauvegarder immédiatement
+                    localStorage.setItem('globalItems', JSON.stringify(globalItems));
                 }
-                
+
                 draggingElement = null;
-                sourceList = null;
-                sourceKey = null;
             }
         });
 
-        // Permettre le drop dans toutes les listes
+        // Amélioration du comportement du drag & drop
         document.querySelectorAll('.checklist').forEach(checklist => {
             checklist.addEventListener('dragover', (e) => {
                 e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
                 if (!draggingElement) return;
 
                 const afterElement = getDropPosition(checklist, e.clientY);
@@ -247,6 +267,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     checklist.insertBefore(draggingElement, afterElement);
                 } else {
                     checklist.appendChild(draggingElement);
+                }
+            });
+
+            checklist.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (!draggingElement) return;
+
+                const targetList = checklist;
+                const targetKey = targetList === objectifsList ? 'objectifs' :
+                                targetList === checklistQuotidienne ? 'checklist' :
+                                targetList.id;
+
+                const itemId = draggingElement.dataset.id;
+                if (globalItems[itemId]) {
+                    globalItems[itemId].currentSection = targetKey;
+                    globalItems[itemId].position = Array.from(targetList.children).indexOf(draggingElement);
+                    
+                    // Sauvegarder immédiatement après le drop
+                    localStorage.setItem('globalItems', JSON.stringify(globalItems));
                 }
             });
         });
@@ -340,8 +379,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (confirm('Voulez-vous vraiment réinitialiser toutes les cases ?')) {
                 liste.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                     cb.checked = false;
+                    const li = cb.closest('li');
+                    if (li && li.dataset.id && globalItems[li.dataset.id]) {
+                        globalItems[li.dataset.id].checked = false;
+                    }
                 });
-                sauvegarderListe(liste, storageKey);
+                localStorage.setItem('globalItems', JSON.stringify(globalItems));
             }
         });
     }
