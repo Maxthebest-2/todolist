@@ -239,9 +239,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Permettre le drag & drop sur toutes les listes
         document.querySelectorAll('.checklist').forEach(checklist => {
+            checklist.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                checklist.classList.add('drag-over');
+            });
+
+            checklist.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                if (e.relatedTarget && !checklist.contains(e.relatedTarget)) {
+                    checklist.classList.remove('drag-over');
+                }
+            });
+
             checklist.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
+                checklist.classList.add('drag-over');
+                
                 if (!draggingElement) return;
 
                 const afterElement = getDropPosition(checklist, e.clientY);
@@ -254,6 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             checklist.addEventListener('drop', (e) => {
                 e.preventDefault();
+                checklist.classList.remove('drag-over');
                 if (!draggingElement) return;
 
                 const targetList = checklist;
@@ -293,12 +308,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 draggingElement = e.target;
                 draggingElement.classList.add('dragging');
                 e.dataTransfer.effectAllowed = 'move';
+                
+                // Ajouter un délai pour l'effet visuel
+                setTimeout(() => {
+                    draggingElement.classList.add('dragging-started');
+                }, 0);
             }
         });
 
         liste.addEventListener('dragend', (e) => {
             if (draggingElement) {
-                draggingElement.classList.remove('dragging');
+                draggingElement.classList.remove('dragging', 'dragging-started');
+                document.querySelectorAll('.checklist').forEach(list => {
+                    list.classList.remove('drag-over');
+                });
                 draggingElement = null;
             }
         });

@@ -1,0 +1,12 @@
+{
+  "name": "assistant-quotidienne",
+  "version": "1.0.0",
+  "description": "Assistant de tâches quotidiennes",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+} 

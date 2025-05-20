@@ -55,7 +55,43 @@
         <div class="modal-content">
             <h3>Nouvelle Section</h3>
             <input type="text" id="sectionNameInput" placeholder="Nom de la section">
-            <input type="text" id="sectionIconInput" placeholder="Emoji de la section (ex: 📚)">
+            <div class="emoji-picker-container">
+                <input type="text" id="sectionIconInput" placeholder="Emoji de la section" readonly>
+                <div class="emoji-picker">
+                    <div class="emoji-category">
+                        <div class="category-title">Travail & Études</div>
+                        <button class="emoji-btn">💼</button>
+                        <button class="emoji-btn">📚</button>
+                        <button class="emoji-btn">📝</button>
+                        <button class="emoji-btn">🧑‍💻</button>
+                        <button class="emoji-btn">🧑‍🏫</button>
+                    </div>
+                    <div class="emoji-category">
+                        <div class="category-title">Santé & Bien-être</div>
+                        <button class="emoji-btn">🏋️</button>
+                        <button class="emoji-btn">🧘</button>
+                        <button class="emoji-btn">🍽️</button>
+                        <button class="emoji-btn">💊</button>
+                        <button class="emoji-btn">🧑‍⚕️</button>
+                    </div>
+                    <div class="emoji-category">
+                        <div class="category-title">Loisirs & Créativité</div>
+                        <button class="emoji-btn">🎨</button>
+                        <button class="emoji-btn">🎵</button>
+                        <button class="emoji-btn">🎮</button>
+                        <button class="emoji-btn">📱</button>
+                        <button class="emoji-btn">✈️</button>
+                    </div>
+                    <div class="emoji-category">
+                        <div class="category-title">Maison & Vie quotidienne</div>
+                        <button class="emoji-btn">🏠</button>
+                        <button class="emoji-btn">🛒</button>
+                        <button class="emoji-btn">🧹</button>
+                        <button class="emoji-btn">🍳</button>
+                        <button class="emoji-btn">🧑‍🔧</button>
+                    </div>
+                </div>
+            </div>
             <div class="modal-buttons">
                 <button class="modal-btn cancel" id="cancelSectionBtn">Annuler</button>
                 <button class="modal-btn save" id="saveSectionBtn">Créer</button>
@@ -97,6 +133,35 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Nouvelle modale pour l'édition des tâches -->
+    <div id="editTaskModal" class="modal">
+        <div class="modal-content">
+            <h3>Modifier la tâche</h3>
+            <div class="edit-task-form">
+                <div class="form-group">
+                    <label for="editTaskInput">Texte de la tâche</label>
+                    <input type="text" id="editTaskInput" placeholder="Description de la tâche">
+                </div>
+                <div class="form-group">
+                    <label>Priorité</label>
+                    <div class="priority-buttons modal-priority">
+                        <button class="priority-btn high" title="Priorité haute">Haute</button>
+                        <button class="priority-btn medium" title="Priorité moyenne">Moyenne</button>
+                        <button class="priority-btn low" title="Priorité basse">Basse</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskDate">Date d'échéance</label>
+                    <input type="date" id="editTaskDate" class="date-picker">
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" id="cancelEditBtn">Annuler</button>
+                <button class="modal-btn save" id="saveEditBtn">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
 </body>
 </html> 

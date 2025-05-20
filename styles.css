@@ -281,31 +281,31 @@ h1 {
 
 .checklist {
     list-style: none;
-    min-height: 50px; /* Hauteur minimale pour permettre le drop */
-    padding: 10px 0;
-    border: 2px dashed transparent; /* Bordure invisible par défaut */
+    min-height: 50px;
+    padding: 10px;
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
     transition: all 0.3s ease;
 }
 
 .checklist:empty {
-    border-color: rgba(255, 255, 255, 0.1); /* Bordure visible quand vide */
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     padding: 20px;
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .checklist:empty::after {
     content: "Déposez vos éléments ici";
     color: var(--text-secondary);
     font-style: italic;
-    opacity: 0.7;
+    opacity: 0.6;
 }
 
-/* Style quand on survole avec un élément */
 .checklist.drag-over {
-    background: rgba(255, 255, 255, 0.05);
     border-color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .checklist li {
@@ -331,7 +331,12 @@ h1 {
 
 .checklist li.dragging {
     opacity: 0.5;
-    background: rgba(255, 255, 255, 0.15);
+    position: relative;
+    z-index: 1000;
+}
+
+.checklist li.dragging-started {
+    transform: scale(1.02);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
@@ -618,6 +623,22 @@ h1 {
         box-shadow: 0 0 35px rgba(76, 175, 80, 0.35),
                    inset 0 0 25px rgba(76, 175, 80, 0.25);
     }
+}
+
+/* Animation pour le drop */
+@keyframes dropComplete {
+    0% {
+        transform: scale(1.05);
+        background: rgba(255, 255, 255, 0.1);
+    }
+    100% {
+        transform: scale(1);
+        background: rgba(255, 255, 255, 0.05);
+    }
+}
+
+.checklist li.drop-complete {
+    animation: dropComplete 0.3s ease-out forwards;
 }
 
 /* Media Queries */
@@ -954,25 +975,23 @@ h1 {
 
 .section-actions {
     display: flex;
-    gap: 10px;
+    gap: 8px;
 }
 
 .edit-section-btn,
 .delete-section-btn {
     background: none;
     border: none;
-    color: var(--text-primary);
-    font-size: 1.2em;
     cursor: pointer;
-    opacity: 0.7;
-    transition: all 0.3s ease;
-    padding: 5px;
+    font-size: 1.2em;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
 }
 
 .edit-section-btn:hover,
 .delete-section-btn:hover {
-    opacity: 1;
-    transform: scale(1.1);
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Styles spécifiques pour le thème soleil */
@@ -1032,4 +1051,141 @@ h1 {
         background: rgba(255, 152, 0, 0.05);
         border: 1px solid rgba(255, 152, 0, 0.2);
     }
+}
+
+/* Styles pour le formulaire d'édition */
+.edit-task-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"] {
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.modal-priority {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.modal-priority .priority-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal-priority .priority-btn.high {
+    border-color: var(--priority-high);
+}
+
+.modal-priority .priority-btn.medium {
+    border-color: var(--priority-medium);
+}
+
+.modal-priority .priority-btn.low {
+    border-color: var(--priority-low);
+}
+
+.modal-priority .priority-btn.active {
+    color: white;
+}
+
+.modal-priority .priority-btn.high.active {
+    background-color: var(--priority-high);
+}
+
+.modal-priority .priority-btn.medium.active {
+    background-color: var(--priority-medium);
+}
+
+.modal-priority .priority-btn.low.active {
+    background-color: var(--priority-low);
+}
+
+.emoji-picker-container {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.emoji-picker {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--background-mid);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 5px;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.emoji-picker.show {
+    display: block;
+}
+
+.emoji-category {
+    margin-bottom: 15px;
+}
+
+.emoji-category:last-child {
+    margin-bottom: 0;
+}
+
+.category-title {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.emoji-category {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+.emoji-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.emoji-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+#sectionIconInput {
+    cursor: pointer;
 } 
