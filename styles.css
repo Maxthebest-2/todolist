@@ -394,6 +394,12 @@ h1 {
     cursor: pointer;
 }
 
+.date-picker:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.05);
+}
+
 .add-objectif-btn {
     display: block;
     width: 100%;
@@ -1188,4 +1194,149 @@ h1 {
 
 #sectionIconInput {
     cursor: pointer;
+}
+
+.reminder-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: transparent;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    z-index: 1000;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    min-height: 50px;
+    margin-top: 60px;
+}
+
+.reminder-item {
+    background: rgba(16, 185, 129, 0.2);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-family: monospace;
+    font-size: 1.1em;
+    animation: pulse 2s infinite;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(4px);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.9;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.checklist li.overdue {
+    border-left: 4px solid #ff4444;
+    background: rgba(255, 68, 68, 0.1);
+}
+
+.checklist li.overdue:hover {
+    background: rgba(255, 68, 68, 0.15);
+}
+
+.reminder-item.overdue {
+    color: #ff4444;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Thème Sombre (Lune) */
+[data-theme="dark"] .reminder-item {
+    background: rgba(59, 130, 246, 0.2);  /* Bleu royal */
+    color: #60A5FA;  /* Bleu clair */
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+}
+
+[data-theme="dark"] .reminder-item.overdue {
+    background: rgba(239, 68, 68, 0.2);  /* Rouge vif */
+    color: #FCA5A5;  /* Rouge clair */
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+}
+
+/* Thème Soleil */
+[data-theme="sun"] .reminder-item {
+    background: rgba(234, 88, 12, 0.15);  /* Orange foncé */
+    color: #EA580C;  /* Orange vif */
+    border: 1px solid rgba(234, 88, 12, 0.3);
+    box-shadow: 0 0 15px rgba(234, 88, 12, 0.2);
+}
+
+[data-theme="sun"] .reminder-item.overdue {
+    background: rgba(220, 38, 38, 0.15);  /* Rouge foncé */
+    color: #DC2626;  /* Rouge vif */
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    box-shadow: 0 0 15px rgba(220, 38, 38, 0.2);
+}
+
+/* Thème Plage */
+[data-theme="light"] .reminder-item {
+    background: rgba(6, 182, 212, 0.2);  /* Bleu turquoise */
+    color: #22D3EE;  /* Bleu turquoise clair */
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+}
+
+[data-theme="light"] .reminder-item.overdue {
+    background: rgba(239, 68, 68, 0.2);  /* Rouge vif */
+    color: #FCA5A5;  /* Rouge clair */
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+}
+
+/* Ajustements pour mobile */
+@media screen and (max-width: 768px) {
+    .reminder-item {
+        font-size: 0.9em;
+        padding: 8px 15px;
+    }
+}
+
+/* Amélioration de l'animation */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.9;
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
 } 

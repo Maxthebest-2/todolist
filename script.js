@@ -173,6 +173,21 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
 
+        // Gestionnaire pour la case à cocher
+        const checkbox = li.querySelector('input[type="checkbox"]');
+        const datePicker = li.querySelector('.date-picker');
+        
+        checkbox.addEventListener('change', () => {
+            if (checkbox.checked) {
+                datePicker.value = ''; // Effacer la date
+                datePicker.disabled = true; // Désactiver le sélecteur de date
+            } else {
+                datePicker.disabled = false; // Réactiver le sélecteur de date
+            }
+            sauvegarderListe(liste, storageKey);
+            filterItems(searchInput.value);
+        });
+
         // Gestionnaire pour les boutons de priorité
         const priorityButtons = li.querySelectorAll('.priority-btn');
         priorityButtons.forEach(btn => {
@@ -707,4 +722,62 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Chargement initial des sections personnalisées
     loadCustomSections();
+
+    function updateReminder() {
+        const now = new Date();
+        const reminderElement = document.getElementById('reminder');
+        let reminderText = '';
+
+        // Récupérer tous les éléments de toutes les listes
+        const allLists = document.querySelectorAll('.checklist');
+        allLists.forEach(list => {
+            const items = list.querySelectorAll('li');
+            items.forEach(item => {
+                const datePicker = item.querySelector('.date-picker');
+                const isChecked = item.querySelector('input[type="checkbox"]').checked;
+                
+                // Ne pas afficher le timer si l'élément est coché
+                if (datePicker && datePicker.value && !isChecked) {
+                    // Créer une date avec l'heure de fin de journée (23:59:59)
+                    const taskDate = new Date(datePicker.value);
+                    taskDate.setHours(23, 59, 59, 999);
+                    
+                    const timeLeft = taskDate - now;
+                    
+                    if (timeLeft < 0) {
+                        // La date est dépassée
+                        const taskText = item.querySelector('.objectif-text').textContent;
+                        const daysOverdue = Math.abs(Math.floor(timeLeft / (1000 * 60 * 60 * 24)));
+                        reminderText += `<div class="reminder-item overdue">⚠️ ${taskText}: En retard de ${daysOverdue} jour${daysOverdue > 1 ? 's' : ''}</div>`;
+                        
+                        // Ajouter une classe visuelle pour les tâches en retard
+                        item.classList.add('overdue');
+                    } else {
+                        // La date n'est pas dépassée
+                        item.classList.remove('overdue');
+                        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                        
+                        let timeString = '';
+                        if (days > 0) timeString += `${days}j `;
+                        timeString += `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                        
+                        const taskText = item.querySelector('.objectif-text').textContent;
+                        reminderText += `<div class="reminder-item">${taskText}: ${timeString}</div>`;
+                    }
+                } else {
+                    // Retirer la classe overdue si l'élément est coché
+                    item.classList.remove('overdue');
+                }
+            });
+        });
+
+        reminderElement.innerHTML = reminderText;
+    }
+
+    // Appeler updateReminder toutes les secondes pour un chronomètre en temps réel
+    updateReminder();
+    setInterval(updateReminder, 1000);
 }); 
