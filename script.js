@@ -208,11 +208,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Événements
-        li.querySelector('input[type="checkbox"]').addEventListener('change', () => {
-            sauvegarderListe(liste, storageKey);
-            filterItems(searchInput.value);
-        });
-
         li.querySelector('.date-picker').addEventListener('change', () => {
             sauvegarderListe(liste, storageKey);
         });
@@ -253,7 +248,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.checklist').forEach(checklist => {
             checklist.addEventListener('dragenter', (e) => {
                 e.preventDefault();
-                checklist.classList.add('drag-over');
+                if (draggingElement && checklist !== draggingElement.parentElement) {
+                    checklist.classList.add('drag-over');
+                }
             });
 
             checklist.addEventListener('dragleave', (e) => {
@@ -266,7 +263,6 @@ document.addEventListener('DOMContentLoaded', function() {
             checklist.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
-                checklist.classList.add('drag-over');
                 
                 if (!draggingElement) return;
 
