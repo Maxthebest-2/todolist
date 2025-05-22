@@ -156,8 +156,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Création des éléments
     function createListElement(text, liste, storageKey) {
         const li = document.createElement('li');
+        const uniqueId = 'task-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        li.id = uniqueId;
         li.setAttribute('draggable', true);
-        li.dataset.id = `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        li.dataset.id = uniqueId;
+        
         li.innerHTML = `
             <input type="checkbox">
             <span class="objectif-text">${text}</span>
@@ -178,12 +181,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const datePicker = li.querySelector('.date-picker');
         
         checkbox.addEventListener('change', () => {
-            if (checkbox.checked) {
-                datePicker.value = ''; // Effacer la date
-                datePicker.disabled = true; // Désactiver le sélecteur de date
-            } else {
-                datePicker.disabled = false; // Réactiver le sélecteur de date
-            }
             sauvegarderListe(liste, storageKey);
             filterItems(searchInput.value);
         });
@@ -738,22 +735,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Ne pas afficher le timer si l'élément est coché
                 if (datePicker && datePicker.value && !isChecked) {
-                    // Créer une date avec l'heure de fin de journée (23:59:59)
                     const taskDate = new Date(datePicker.value);
                     taskDate.setHours(23, 59, 59, 999);
                     
                     const timeLeft = taskDate - now;
+                    const taskId = item.id;
                     
                     if (timeLeft < 0) {
-                        // La date est dépassée
                         const taskText = item.querySelector('.objectif-text').textContent;
                         const daysOverdue = Math.abs(Math.floor(timeLeft / (1000 * 60 * 60 * 24)));
-                        reminderText += `<div class="reminder-item overdue">⚠️ ${taskText}: En retard de ${daysOverdue} jour${daysOverdue > 1 ? 's' : ''}</div>`;
-                        
-                        // Ajouter une classe visuelle pour les tâches en retard
+                        reminderText += `<div class="reminder-item overdue" data-task-id="${taskId}">⚠️ ${taskText}: En retard de ${daysOverdue} jour${daysOverdue > 1 ? 's' : ''}</div>`;
                         item.classList.add('overdue');
                     } else {
-                        // La date n'est pas dépassée
                         item.classList.remove('overdue');
                         const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
                         const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -765,19 +758,125 @@ document.addEventListener('DOMContentLoaded', function() {
                         timeString += `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                         
                         const taskText = item.querySelector('.objectif-text').textContent;
-                        reminderText += `<div class="reminder-item">${taskText}: ${timeString}</div>`;
+                        reminderText += `<div class="reminder-item" data-task-id="${taskId}">${taskText}: ${timeString}</div>`;
                     }
                 } else {
-                    // Retirer la classe overdue si l'élément est coché
                     item.classList.remove('overdue');
                 }
             });
         });
 
         reminderElement.innerHTML = reminderText;
+
+        // Ajouter les écouteurs d'événements pour les timers
+        const reminderItems = reminderElement.querySelectorAll('.reminder-item');
+        reminderItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const taskId = item.getAttribute('data-task-id');
+                const taskElement = document.getElementById(taskId);
+                if (taskElement) {
+                    // Faire défiler jusqu'à l'élément avec un offset pour le header
+                    const headerOffset = 100;
+                    const elementPosition = taskElement.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+
+                    // Ajouter un effet de surbrillance temporaire
+                    taskElement.style.transition = 'all 0.3s ease';
+                    taskElement.style.transform = 'scale(1.02)';
+                    taskElement.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.3)';
+                    setTimeout(() => {
+                        taskElement.style.transform = 'scale(1)';
+                        taskElement.style.boxShadow = 'none';
+                    }, 1000);
+                }
+            });
+        });
     }
 
     // Appeler updateReminder toutes les secondes pour un chronomètre en temps réel
     updateReminder();
     setInterval(updateReminder, 1000);
+
+    function createTaskElement(text, date, priority = 'medium') {
+        const li = document.createElement('li');
+        li.id = 'task-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.addEventListener('change', () => {
+            li.classList.toggle('completed');
+            saveTasks();
+        });
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'objectif-text';
+        textSpan.textContent = text;
+
+        const datePicker = document.createElement('input');
+        datePicker.type = 'date';
+        datePicker.className = 'date-picker';
+        if (date) {
+            datePicker.value = date;
+        }
+        datePicker.addEventListener('change', saveTasks);
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'objectif-actions';
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-btn';
+        editBtn.innerHTML = '✏️';
+        editBtn.addEventListener('click', () => editTask(li));
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '🗑️';
+        deleteBtn.addEventListener('click', () => {
+            li.remove();
+            saveTasks();
+        });
+
+        actionsDiv.appendChild(datePicker);
+        actionsDiv.appendChild(editBtn);
+        actionsDiv.appendChild(deleteBtn);
+
+        li.appendChild(checkbox);
+        li.appendChild(textSpan);
+        li.appendChild(actionsDiv);
+
+        // Ajouter la classe de priorité
+        li.classList.add('priority-' + priority);
+
+        return li;
+    }
+
+    // Gestion du sélecteur d'émojis
+    const emojiPicker = document.querySelector('.emoji-picker');
+    const emojiButtons = document.querySelectorAll('.emoji-btn');
+
+    // Afficher/masquer le sélecteur d'émojis
+    sectionIconInput.addEventListener('click', (e) => {
+        e.preventDefault();
+        emojiPicker.classList.toggle('show');
+    });
+
+    // Fermer le sélecteur d'émojis en cliquant en dehors
+    document.addEventListener('click', (e) => {
+        if (!sectionIconInput.contains(e.target) && !emojiPicker.contains(e.target)) {
+            emojiPicker.classList.remove('show');
+        }
+    });
+
+    // Gérer la sélection d'un émoji
+    emojiButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            sectionIconInput.value = button.textContent;
+            emojiPicker.classList.remove('show');
+        });
+    });
 }); 

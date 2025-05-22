@@ -9,6 +9,12 @@ app.use((req, res, next) => {
     next();
 });
 
+// Middleware pour logger les requêtes
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+});
+
 // Servir les fichiers statiques
 app.use(express.static(__dirname, {
     setHeaders: (res, path) => {
@@ -23,12 +29,25 @@ app.use(express.static(__dirname, {
 
 // Route par défaut
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    console.log('Tentative de servir index.html');
+    res.sendFile(path.join(__dirname, 'index.html'), (err) => {
+        if (err) {
+            console.error('Erreur lors de l\'envoi de index.html:', err);
+            res.status(500).send('Erreur lors du chargement de la page');
+        }
+    });
 });
 
 // Gestion des erreurs 404
 app.use((req, res) => {
+    console.log('404 - Page non trouvée:', req.url);
     res.status(404).send('Page non trouvée');
+});
+
+// Gestion des erreurs globales
+app.use((err, req, res, next) => {
+    console.error('Erreur serveur:', err);
+    res.status(500).send('Une erreur est survenue sur le serveur');
 });
 
 // Démarrer le serveur
